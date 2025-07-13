@@ -7,21 +7,21 @@ Display{
     Width = 320
     Rotation = Landscape
     SPI = SPI3_HOST
-    MISO pin = 13
-    MOSI pin = 11
-    clock pin = 12
-    resetPin = 46
-    DcPin = 14
-    CsPin = 10
-    backLightPin = 3
+    MISO Pin = 13
+    MOSI Pin = 11
+    Clock Pin = 12
+    Reset Pin = 46
+    Dc Pin = 14
+    Cs Pin = 10
+    BackLight Pin = 3
 }
 
 SD Card{
    SPI = NOT Hardware SPI
-   SD_CS pin = 39
-   SD_MOSI = 41
-   SD_MISO = 38
-   SD_CLOCK = 40
+   CS = 39
+   MOSI = 41
+   MISO = 38
+   CLOCK = 40
 }
 
 Inputs{
@@ -41,8 +41,8 @@ Inputs{
 }
 
 IR{
-    RECEIVE_PIN 35
-    TRANSMIT_PIN 1
+    Receive Pin 35
+    Transmit Pin 1
 }
 
 Radio{
@@ -50,9 +50,9 @@ Radio{
     SPI = SPI3_HOST
     MISO pin = 13
     MOSI pin = 11
-    clock pin = 12
-    nrf_csn_pin = 45
-    nrf_ce_pin = 48
+    Clock pin = 12
+    NRF_Csn pin = 45
+    NRF_Ce pin = 48
 }
 
 RFID {
@@ -68,7 +68,7 @@ RFID {
 
 LED{
     Type = Single Color
-    pin = 2
+    Pin = 2
 }
 
 Power{

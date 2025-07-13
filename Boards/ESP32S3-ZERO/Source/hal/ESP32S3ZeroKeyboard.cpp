@@ -11,7 +11,6 @@
 #define I2C_MASTER_TX_BUF_DISABLE 0
 #define I2C_MASTER_RX_BUF_DISABLE 0
 
-// Verify we're using the correct pins
 static_assert(ESP32S3_ZERO_I2C_SDA == GPIO_NUM_8, "I2C SDA should be GPIO8");
 static_assert(ESP32S3_ZERO_I2C_SCL == GPIO_NUM_9, "I2C SCL should be GPIO9");
 
@@ -210,9 +209,9 @@ static void scanI2CBus() {
     } else {
         TT_LOG_I(TAG, "Found %d I2C device(s)", devices_found);
         if (found) {
-            TT_LOG_I(TAG, "✓ PCA9555 keyboard found at expected address 0x%02X", ESP32S3_KEYBOARD_SLAVE_ADDRESS);
+            TT_LOG_I(TAG, "PCA9555 keyboard found at expected address 0x%02X", ESP32S3_KEYBOARD_SLAVE_ADDRESS);
         } else {
-            TT_LOG_W(TAG, "✗ PCA9555 keyboard NOT found at expected address 0x%02X", ESP32S3_KEYBOARD_SLAVE_ADDRESS);
+            TT_LOG_W(TAG, "PCA9555 keyboard NOT found at expected address 0x%02X", ESP32S3_KEYBOARD_SLAVE_ADDRESS);
         }
     }
 
@@ -293,11 +292,6 @@ bool ESP32S3ZeroKeyboard::stop() {
         lv_indev_delete(deviceHandle);
         deviceHandle = nullptr;
     }
-
-    // Optionally deinitialize I2C driver
-    // Note: Only do this if no other devices are using the I2C bus
-    // i2c_driver_delete(ESP32S3_KEYBOARD_I2C_BUS_HANDLE);
-    // i2c_initialized = false;
 
     TT_LOG_I(TAG, "ESP32S3-ZERO keyboard stopped");
     return true;
