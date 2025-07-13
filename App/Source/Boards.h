@@ -56,6 +56,13 @@
 #elif defined(CONFIG_TT_BOARD_WAVESHARE_S3_TOUCH_43)
 #include "WaveshareS3Touch43.h"
 #define TT_BOARD_HARDWARE &waveshare_s3_touch_43
+#elif defined(CONFIG_TT_BOARD_ESP32S3_ZERO)
+#include "ESP32S3Zero.h"
+#define TT_BOARD_HARDWARE &esp32s3_zero_config
+#elif defined(CONFIG_TT_BOARD_CUSTOM)
+// Custom board configuration - currently configured for ESP32S3-ZERO
+#include "ESP32S3Zero.h"
+#define TT_BOARD_HARDWARE &esp32s3_zero_config
 #else
 #define TT_BOARD_HARDWARE NULL
 #error Replace TT_BOARD_HARDWARE in main.c with your own. Or copy one of the ./sdkconfig.board.* files into ./sdkconfig.

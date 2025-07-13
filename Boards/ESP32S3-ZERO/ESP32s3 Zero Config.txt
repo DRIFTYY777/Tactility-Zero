@@ -1,0 +1,87 @@
+MCU ESP32S3 16MB flash 8MB PSRAM
+
+Display{
+    Driver = ST7789
+    Touch = null
+    Height = 240
+    Width = 320
+    Rotation = Landscape
+    SPI = SPI3_HOST
+    MISO pin = 13
+    MOSI pin = 11
+    clock pin = 12
+    resetPin = 46
+    DcPin = 14
+    CsPin = 10
+    backLightPin = 3
+}
+
+SD Card{
+   SPI = NOT Hardware SPI
+   SD_CS pin = 39
+   SD_MOSI = 41
+   SD_MISO = 38
+   SD_CLOCK = 40
+}
+
+Inputs{
+    Type = IO expander
+    Device = PCA9555 (0x20)
+    I2C = I2C_NUM_0
+    SDA = 8
+    SCL = 9
+    Buttons{
+        up
+        down
+        left
+        right
+        ok
+        back
+    } 
+}
+
+IR{
+    RECEIVE_PIN 35
+    TRANSMIT_PIN 1
+}
+
+Radio{
+    Device = NRF24L01
+    SPI = SPI3_HOST
+    MISO pin = 13
+    MOSI pin = 11
+    clock pin = 12
+    nrf_csn_pin = 45
+    nrf_ce_pin = 48
+}
+
+RFID {
+    Device = RC522 
+    SPI = NOT Hardware SPI
+    MOSI = 41
+    MISO = 38
+    CLOCK = 40
+    SDA = 7
+    CS pin = 6
+    RST = 15
+}
+
+LED{
+    Type = Single Color
+    pin = 2
+}
+
+Power{
+    Battery Monitor{
+        Device = MAX17048G 
+        Type = Fuel gauge
+        I2C = I2C_NUM_0
+        SDA = 8
+        SCL = 9
+    }
+    Power Management{
+        Device = TPS63020DSJR
+        Type = 3.3V buck boost converter
+        PowerSync Pin = 5
+    }
+}

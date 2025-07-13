@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS
+        "Source/ESP32S3Zero.cpp"
+        "Source/hal/ESP32S3ZeroDisplay.cpp"
+        "Source/hal/ESP32S3ZeroKeyboard.cpp"
+        "Source/hal/ESP32S3ZeroSdCard.cpp"
+        "Source/InitBoot.cpp"
+    INCLUDE_DIRS
+        "Source"
+    REQUIRES
+        "Tactility"
+        "esp_lvgl_port"
+        "ST7789"
+        "esp_io_expander"
+        "esp_io_expander_tca95xx_16bit"
+        "PwmBacklight"
+        "driver"
+        "vfs"
+        "fatfs"
+)

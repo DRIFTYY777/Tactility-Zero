@@ -17,56 +17,128 @@ static const Configuration* config_instance = nullptr;
 // region Default services
 
 namespace service {
-    namespace gui { extern const ServiceManifest manifest; }
-    namespace loader { extern const ServiceManifest manifest; }
-    namespace statusbar { extern const ServiceManifest manifest; }
-#if TT_FEATURE_SCREENSHOT_ENABLED
-    namespace screenshot { extern const ServiceManifest manifest; }
-#endif
+namespace gui {
+extern const ServiceManifest manifest;
 }
+namespace loader {
+extern const ServiceManifest manifest;
+}
+namespace statusbar {
+extern const ServiceManifest manifest;
+}
+#if TT_FEATURE_SCREENSHOT_ENABLED
+namespace screenshot {
+extern const ServiceManifest manifest;
+}
+#endif
+} // namespace service
 
 // endregion
 
 // region Default apps
 
 namespace app {
-    namespace addgps { extern const AppManifest manifest; }
-    namespace alertdialog { extern const AppManifest manifest; }
-    namespace applist { extern const AppManifest manifest; }
-    namespace calculator { extern const AppManifest manifest; }
-    namespace chat { extern const AppManifest manifest; }
-    namespace boot { extern const AppManifest manifest; }
-    namespace display { extern const AppManifest manifest; }
-    namespace filebrowser { extern const AppManifest manifest; }
-    namespace fileselection { extern const AppManifest manifest; }
-    namespace gpio { extern const AppManifest manifest; }
-    namespace gpssettings { extern const AppManifest manifest; }
-    namespace i2cscanner { extern const AppManifest manifest; }
-    namespace i2csettings { extern const AppManifest manifest; }
-    namespace imageviewer { extern const AppManifest manifest; }
-    namespace inputdialog { extern const AppManifest manifest; }
-    namespace launcher { extern const AppManifest manifest; }
-    namespace log { extern const AppManifest manifest; }
-    namespace notes { extern const AppManifest manifest; }
-    namespace power { extern const AppManifest manifest; }
-    namespace selectiondialog { extern const AppManifest manifest; }
-    namespace serialconsole { extern const AppManifest manifest; }
-    namespace settings { extern const AppManifest manifest; }
-    namespace systeminfo { extern const AppManifest manifest; }
-    namespace textviewer { extern const AppManifest manifest; }
-    namespace timedatesettings { extern const AppManifest manifest; }
-    namespace timezone { extern const AppManifest manifest; }
-    namespace usbsettings { extern const AppManifest manifest; }
-    namespace wifiapsettings { extern const AppManifest manifest; }
-    namespace wificonnect { extern const AppManifest manifest; }
-    namespace wifimanage { extern const AppManifest manifest; }
+namespace addgps {
+extern const AppManifest manifest;
+}
+namespace alertdialog {
+extern const AppManifest manifest;
+}
+namespace applist {
+extern const AppManifest manifest;
+}
+namespace calculator {
+extern const AppManifest manifest;
+}
+namespace chat {
+extern const AppManifest manifest;
+}
+namespace boot {
+extern const AppManifest manifest;
+}
+namespace display {
+extern const AppManifest manifest;
+}
+namespace filebrowser {
+extern const AppManifest manifest;
+}
+namespace fileselection {
+extern const AppManifest manifest;
+}
+namespace gpio {
+extern const AppManifest manifest;
+}
+namespace gpssettings {
+extern const AppManifest manifest;
+}
+namespace i2cscanner {
+extern const AppManifest manifest;
+}
+namespace i2csettings {
+extern const AppManifest manifest;
+}
+namespace imageviewer {
+extern const AppManifest manifest;
+}
+namespace inputdialog {
+extern const AppManifest manifest;
+}
+namespace launcher {
+extern const AppManifest manifest;
+}
+namespace log {
+extern const AppManifest manifest;
+}
+namespace notes {
+extern const AppManifest manifest;
+}
+namespace power {
+extern const AppManifest manifest;
+}
+namespace selectiondialog {
+extern const AppManifest manifest;
+}
+namespace serialconsole {
+extern const AppManifest manifest;
+}
+namespace settings {
+extern const AppManifest manifest;
+}
+namespace systeminfo {
+extern const AppManifest manifest;
+}
+namespace textviewer {
+extern const AppManifest manifest;
+}
+namespace timedatesettings {
+extern const AppManifest manifest;
+}
+namespace timezone {
+extern const AppManifest manifest;
+}
+namespace usbsettings {
+extern const AppManifest manifest;
+}
+namespace wifiapsettings {
+extern const AppManifest manifest;
+}
+namespace wificonnect {
+extern const AppManifest manifest;
+}
+namespace wifimanage {
+extern const AppManifest manifest;
+}
 #if TT_FEATURE_SCREENSHOT_ENABLED
-        namespace screenshot { extern const AppManifest manifest; }
+namespace screenshot {
+extern const AppManifest manifest;
+}
 #endif
 #ifdef ESP_PLATFORM
-    namespace crashdiagnostics { extern const AppManifest manifest; }
-#endif
+namespace crashdiagnostics {
+extern const AppManifest manifest;
 }
+#endif
+} // namespace app
 
 #ifndef ESP_PLATFORM
 #endif
@@ -118,7 +190,7 @@ static void registerSystemApps() {
 
 static void registerUserApps(const std::vector<const app::AppManifest*>& apps) {
     TT_LOG_I(TAG, "Registering user apps");
-    for (auto* manifest : apps) {
+    for (auto* manifest: apps) {
         assert(manifest != nullptr);
         addApp(*manifest);
     }
@@ -136,7 +208,7 @@ static void registerAndStartSystemServices() {
 
 static void registerAndStartUserServices(const std::vector<const service::ServiceManifest*>& manifests) {
     TT_LOG_I(TAG, "Registering and starting user services");
-    for (auto* manifest : manifests) {
+    for (auto* manifest: manifests) {
         assert(manifest != nullptr);
         addService(*manifest);
     }
@@ -185,4 +257,4 @@ const Configuration* _Nullable getConfiguration() {
     return config_instance;
 }
 
-} // namespace
+} // namespace tt
