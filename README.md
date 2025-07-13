@@ -5,7 +5,8 @@ Tactility is an operating system that focuses on the ESP32 microcontroller famil
 See [https://tactility.one](https://tactility.one) for more information.
 
 
-
+![Board](https://github.com/DRIFTYY777/Tactility-Zero/blob/main/Boards/ESP32S3-ZERO/Images/Board.jpg) | Board |
+![BoardInternals](https://github.com/DRIFTYY777/Tactility-Zero/blob/main/Boards/ESP32S3-ZERO/Images/BoardInternals.jpg)   | Hardware |
 
 
 ![photo of devices running Tactility](Documentation/pics/tactility-devices.webp)&nbsp;&nbsp;![screenshot of launcher app](Documentation/pics/screenshot-Launcher.png)
