@@ -22,30 +22,30 @@ static const uint8_t ACK_CHECK_EN = 1;
 static Data dataArray[I2C_NUM_MAX];
 
 bool init(const std::vector<i2c::Configuration>& configurations) {
-   TT_LOG_I(TAG, "Init");
-   for (const auto& configuration: configurations) {
+    TT_LOG_I(TAG, "Init");
+    for (const auto& configuration: configurations) {
 #ifdef ESP_PLATFORM
-       if (configuration.config.mode != I2C_MODE_MASTER) {
-           TT_LOG_E(TAG, "Currently only master mode is supported");
-           return false;
-       }
+        if (configuration.config.mode != I2C_MODE_MASTER) {
+            TT_LOG_E(TAG, "Currently only master mode is supported");
+            return false;
+        }
 #endif // ESP_PLATFORM
-       Data& data = dataArray[configuration.port];
-       data.configuration = configuration;
-       data.isConfigured = true;
-   }
+        Data& data = dataArray[configuration.port];
+        data.configuration = configuration;
+        data.isConfigured = true;
+    }
 
-   for (const auto& config: configurations) {
-       if (config.initMode == InitMode::ByTactility) {
-           if (!start(config.port)) {
-               return false;
-           }
-       } else if (config.initMode == InitMode::ByExternal) {
-           dataArray[config.port].isStarted = true;
-       }
-   }
+    for (const auto& config: configurations) {
+        if (config.initMode == InitMode::ByTactility) {
+            if (!start(config.port)) {
+                return false;
+            }
+        } else if (config.initMode == InitMode::ByExternal) {
+            dataArray[config.port].isStarted = true;
+        }
+    }
 
-   return true;
+    return true;
 }
 
 bool configure(i2c_port_t port, const i2c_config_t& configuration) {
@@ -219,7 +219,7 @@ bool masterWriteRegister(i2c_port_t port, uint8_t address, uint8_t reg, const ui
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_WRITE, ACK_CHECK_EN);
     i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
-    i2c_master_write(cmd, (uint8_t*) data, dataSize, ACK_CHECK_EN);
+    i2c_master_write(cmd, (uint8_t*)data, dataSize, ACK_CHECK_EN);
     i2c_master_stop(cmd);
     // TODO: We're passing an inaccurate timeout value as we already lost time with locking
     esp_err_t result = i2c_master_cmd_begin(port, cmd, timeout);
@@ -272,7 +272,7 @@ bool masterHasDeviceAtAddress(i2c_port_t port, uint8_t address, TickType_t timeo
     }
 
 #ifdef ESP_PLATFORM
-    uint8_t message[2] = { 0, 0 };
+    uint8_t message[2] = {0, 0};
     // TODO: We're passing an inaccurate timeout value as we already lost time with locking
     return i2c_master_write_to_device(port, address, message, 2, timeout) == ESP_OK;
 #else
@@ -284,4 +284,4 @@ Lock& getLock(i2c_port_t port) {
     return dataArray[port].mutex;
 }
 
-} // namespace
+} // namespace tt::hal::i2c

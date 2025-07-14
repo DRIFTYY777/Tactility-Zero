@@ -19,9 +19,8 @@ std::shared_ptr<SdCardDevice> createESP32S3ZeroSdCard() {
         SPI2_HOST // Use a different SPI host than the display
     );
 
-
-    // Set additional configuration options
-    configuration->spiFrequencyKhz = 25000000; // Lower SD card frequency for better compatibility
+    // Low frequency SPI is used for SD card on ESP32S3-ZERO
+    configuration->spiFrequencyKhz = 25000; //
 
     auto* sdcard = (SdCardDevice*)new SpiSdCardDevice(
         std::unique_ptr<SpiSdCardDevice::Config>(configuration)

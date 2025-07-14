@@ -13,17 +13,18 @@
 
 using namespace tt::hal;
 
-extern const tt::hal::Configuration esp32s3_zero_config = {
+extern const Configuration esp32s3_zero_config = {
     .initBoot = initBoot,
     .createDisplay = createDisplay,
     .createKeyboard = createKeyboard,
     .sdcard = createESP32S3ZeroSdCard(),
     .power = nullptr,
     .i2c = {
-        tt::hal::i2c::Configuration {
+
+        i2c::Configuration {
             .name = "Internal",
             .port = I2C_NUM_0,
-            .initMode = tt::hal::i2c::InitMode::ByTactility,
+            .initMode = i2c::InitMode::ByTactility,
             .isMutable = true,
             .config = (i2c_config_t) {
                 .mode = I2C_MODE_MASTER,
@@ -32,9 +33,9 @@ extern const tt::hal::Configuration esp32s3_zero_config = {
                 .sda_pullup_en = true,
                 .scl_pullup_en = true,
                 .master = {
-                    .clk_speed = 400000
+                    .clk_speed = 400000 // 400kHz
                 },
-                .clk_flags = 0
+                //.clk_flags = 0
             }
         }
     },

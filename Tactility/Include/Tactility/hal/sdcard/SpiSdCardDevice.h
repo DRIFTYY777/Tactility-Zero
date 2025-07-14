@@ -6,11 +6,11 @@
 
 #include <Tactility/hal/spi/Spi.h>
 
+#include <hal/spi_types.h>
 #include <sd_protocol_types.h>
+#include <soc/gpio_num.h>
 #include <utility>
 #include <vector>
-#include <hal/spi_types.h>
-#include <soc/gpio_num.h>
 
 namespace tt::hal::sdcard {
 
@@ -41,8 +41,7 @@ public:
             mountBehaviourAtBoot(mountBehaviourAtBoot),
             customLock(customLock ? std::move(customLock) : nullptr),
             csPinWorkAround(std::move(csPinWorkAround)),
-            spiHost(spiHost)
-        {}
+            spiHost(spiHost) {}
 
         int spiFrequencyKhz;
         gpio_num_t spiPinCs; // Clock
@@ -71,8 +70,7 @@ private:
 public:
 
     explicit SpiSdCardDevice(std::unique_ptr<Config> config) : SdCardDevice(config->mountBehaviourAtBoot),
-        config(std::move(config))
-    {}
+                                                               config(std::move(config)) {}
 
     std::string getName() const final { return "SD Card"; }
     std::string getDescription() const final { return "SD card via SPI interface"; }
@@ -94,6 +92,6 @@ public:
     sdmmc_card_t* _Nullable getCard() { return card; }
 };
 
-}
+} // namespace tt::hal::sdcard
 
 #endif
