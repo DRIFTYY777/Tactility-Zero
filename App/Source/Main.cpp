@@ -18,7 +18,8 @@ void app_main() {
         .apps = {
             // &hello_world_app,
         },
-        // .autoStartAppId = "I2cScanner",
+        //usbsettings
+        .autoStartAppId = "I2cScanner",
 
     };
 

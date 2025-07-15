@@ -3,7 +3,7 @@
 #include <Tactility/TactilityCore.h>
 #include <Tactility/hal/keyboard/KeyboardDevice.h>
 
-class ESP32S3ZeroKeyboard : public tt::hal::keyboard::KeyboardDevice {
+class ESP32S3_ZeroKeyboard : public tt::hal::keyboard::KeyboardDevice {
 
 private:
 
@@ -11,7 +11,7 @@ private:
 
 public:
 
-    std::string getName() const final { return "ESP32S3-ZERO Keyboard"; }
+    std::string getName() const final { return "ESP32S3_Zero Keyboard"; }
     std::string getDescription() const final { return "I2C keyboard"; }
 
     bool start(lv_display_t* display) override;

@@ -19,11 +19,11 @@ std::shared_ptr<tt::hal::display::DisplayDevice> createDisplay() {
         ESP32S3_ZERO_LCD_PIN_DC,
         ESP32S3_ZERO_LCD_HORIZONTAL_RESOLUTION,
         ESP32S3_ZERO_LCD_VERTICAL_RESOLUTION,
-        touch, // No touch device
-        true, // swapXY - Enable for landscape rotation
-        false, // mirrorX - No horizontal mirror
-        true, // mirrorY - No vertical mirror
-        false // invertColor
+        touch,  // No touch device
+        true,   // swapXY - Enable for landscape rotation
+        false,  // mirrorX - No horizontal mirror
+        true,   // mirrorY - No vertical mirror
+        false   // invertColor
     );
 
     // Set reset pin
