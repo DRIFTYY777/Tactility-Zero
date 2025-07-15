@@ -1,45 +1,35 @@
 #include "ESP32S3ZeroKeyboard.h"
 #include "ESP32S3ZeroConstants.h"
 #include <Tactility/hal/i2c/I2c.h>
+#include <Tactility/Tactility.h>
 
 #define TAG "esp32s3_zero_keyboard"
 
 #define ESP32S3_KEYBOARD_I2C_BUS_HANDLE I2C_NUM_0
 #define ESP32S3_KEYBOARD_SLAVE_ADDRESS 0x20
 
+// Replace hardcoded slave address with dynamic detection
+static uint8_t detected_slave_address = ESP32S3_KEYBOARD_SLAVE_ADDRESS;
+
 // Read 16-bit input state from PCA9555
 static esp_err_t read_pca9555_inputs(uint16_t* input_state) {
     uint8_t port0 = 0, port1 = 0;
 
     // Read input port 0
-    if (!tt::hal::i2c::masterReadRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_KEYBOARD_SLAVE_ADDRESS, 0x00, &port0, 1, pdMS_TO_TICKS(100))) {
+    if (!tt::hal::i2c::masterReadRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, detected_slave_address, 0x00, &port0, 1, pdMS_TO_TICKS(100))) {
         return ESP_FAIL;
     }
 
     // Read input port 1
-    if (!tt::hal::i2c::masterReadRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_KEYBOARD_SLAVE_ADDRESS, 0x01, &port1, 1, pdMS_TO_TICKS(100))) {
+    if (!tt::hal::i2c::masterReadRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, detected_slave_address, 0x01, &port1, 1, pdMS_TO_TICKS(100))) {
         return ESP_FAIL;
     }
 
     // Combine both ports into 16-bit value
     *input_state = (port1 << 8) | port0;
+    // Debug: log raw port values and combined state
+    TT_LOG_I(TAG, "PCA9555 read: port0=0x%02X, port1=0x%02X, combined=0x%04X", port0, port1, *input_state);
     return ESP_OK;
-}
-
-// Test PCA9555 communication by reading a known register
-static bool test_pca9555_communication() {
-    TT_LOG_I(TAG, "Testing PCA9555 communication...");
-
-    uint16_t input_state;
-    esp_err_t ret = read_pca9555_inputs(&input_state);
-
-    if (ret == ESP_OK) {
-        TT_LOG_I(TAG, "PCA9555 communication successful! Current input state: 0x%04X", input_state);
-        return true;
-    } else {
-        TT_LOG_E(TAG, "PCA9555 communication failed");
-        return false;
-    }
 }
 
 
@@ -49,13 +39,13 @@ static esp_err_t configure_pca9555() {
 
     // Set configuration register 0 (pins 0-7) to all inputs (0xFF)
     uint8_t config_data = 0xFF;
-    if (!tt::hal::i2c::masterWriteRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_KEYBOARD_SLAVE_ADDRESS, 0x06, &config_data, 1, pdMS_TO_TICKS(1000))) {
+    if (!tt::hal::i2c::masterWriteRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, detected_slave_address, 0x06, &config_data, 1, pdMS_TO_TICKS(1000))) {
         TT_LOG_E(TAG, "Failed to configure port 0");
         return ESP_FAIL;
     }
 
     // Set configuration register 1 (pins 8-15) to all inputs (0xFF)
-    if (!tt::hal::i2c::masterWriteRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_KEYBOARD_SLAVE_ADDRESS, 0x07, &config_data, 1, pdMS_TO_TICKS(1000))) {
+    if (!tt::hal::i2c::masterWriteRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, detected_slave_address, 0x07, &config_data, 1, pdMS_TO_TICKS(1000))) {
         TT_LOG_E(TAG, "Failed to configure port 1");
         return ESP_FAIL;
     }
@@ -129,50 +119,49 @@ static void keyboard_read_callback(TT_UNUSED lv_indev_t* indev, lv_indev_data_t*
 
 bool ESP32S3ZeroKeyboard::start(lv_display_t* display) {
     TT_LOG_I(TAG, "Starting ESP32S3-ZERO keyboard...");
-    TT_LOG_I(TAG, "I2C Configuration: Bus=%d, SDA=GPIO%d, SCL=GPIO%d", ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_ZERO_I2C_SDA, ESP32S3_ZERO_I2C_SCL);
 
-    // First, let's scan the entire I2C bus to see what devices are available
-    TT_LOG_I(TAG, "Scanning I2C bus for all devices...");
-    bool found_any = false;
-    uint8_t common_pca9555_addresses[] = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27}; // Common PCA9555 addresses
+    // Ensure I2C bus is started (ByTactility mode may have already started it)
+    if (!tt::hal::i2c::isStarted(ESP32S3_KEYBOARD_I2C_BUS_HANDLE)) {
+        if (!tt::hal::i2c::start(ESP32S3_KEYBOARD_I2C_BUS_HANDLE)) {
+            TT_LOG_E(TAG, "Failed to start I2C bus %d", ESP32S3_KEYBOARD_I2C_BUS_HANDLE);
+            return false;
+        }
+    }
+    TT_LOG_I(TAG, "I2C bus %d is ready (SDA=GPIO%d, SCL=GPIO%d)", ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_ZERO_I2C_SDA, ESP32S3_ZERO_I2C_SCL);
 
-    for (uint8_t addr = 1; addr < 127; addr++) {
-        if (tt::hal::i2c::masterHasDeviceAtAddress(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, addr, pdMS_TO_TICKS(100))) {
-            TT_LOG_I(TAG, "Found I2C device at address 0x%02X", addr);
-            found_any = true;
 
-            // Check if this is a common PCA9555 address
-            for (int i = 0; i < sizeof(common_pca9555_addresses); i++) {
-                if (addr == common_pca9555_addresses[i]) {
-                    TT_LOG_I(TAG, "  -> This is a common PCA9555 address!");
-                    break;
-                }
+    // Scan entire I2C bus and probe each device to detect PCA9555
+    TT_LOG_I(TAG, "Scanning full I2C bus for PCA9555 devices...");
+    bool found = false;
+    for (uint8_t addr = 1; addr < 127; ++addr) {
+        if (tt::hal::i2c::masterHasDeviceAtAddress(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, addr, pdMS_TO_TICKS(50))) {
+            TT_LOG_D(TAG, "Probing device at address 0x%02X for PCA9555", addr);
+            uint8_t test;
+            // Attempt to read configuration register 0 (0x06)
+            if (tt::hal::i2c::masterReadRegister(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, addr, 0x06, &test, 1, pdMS_TO_TICKS(100))) {
+                detected_slave_address = addr;
+                found = true;
+                TT_LOG_I(TAG, "PCA9555 detected at address 0x%02X", addr);
+                break;
             }
         }
     }
-
-    if (!found_any) {
-        TT_LOG_E(TAG, "No I2C devices found on the bus! Check I2C wiring and pullups.");
-        TT_LOG_E(TAG, "Expected SDA=GPIO%d, SCL=GPIO%d", ESP32S3_ZERO_I2C_SDA, ESP32S3_ZERO_I2C_SCL);
+    if (!found) {
+        TT_LOG_E(TAG, "No PCA9555 detected on I2C bus");
+        TT_LOG_I(TAG, "Devices responding on bus:");
+        for (uint8_t addr = 1; addr < 127; ++addr) {
+            if (tt::hal::i2c::masterHasDeviceAtAddress(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, addr, pdMS_TO_TICKS(50))) {
+                TT_LOG_I(TAG, "  - Device at 0x%02X", addr);
+            }
+        }
         return false;
     }
-
-    // Check specifically for our keyboard device
-    if (!tt::hal::i2c::masterHasDeviceAtAddress(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_KEYBOARD_SLAVE_ADDRESS, pdMS_TO_TICKS(200))) {
-        TT_LOG_E(TAG, "PCA9555 keyboard not found at I2C address 0x%02X", ESP32S3_KEYBOARD_SLAVE_ADDRESS);
-        TT_LOG_E(TAG, "Available devices were listed above. Check if PCA9555 is properly connected and powered.");
-        return false;
+    if (detected_slave_address != ESP32S3_KEYBOARD_SLAVE_ADDRESS) {
+        TT_LOG_W(TAG, "Using PCA9555 at non-default address 0x%02X", detected_slave_address);
     }
-
-    TT_LOG_I(TAG, "PCA9555 keyboard found at address 0x%02X", ESP32S3_KEYBOARD_SLAVE_ADDRESS);
-
-    // Test basic communication with PCA9555
-    if (!test_pca9555_communication()) {
-        TT_LOG_E(TAG, "PCA9555 communication test failed");
-        return false;
-    }
-
-    // Configure PCA9555 for input operation
+    TT_LOG_I(TAG, "PCA9555 ready at address 0x%02X", detected_slave_address);
+    
+    // Configure PCA9555 for input operation using detected address
     if (configure_pca9555() != ESP_OK) {
         TT_LOG_E(TAG, "Failed to configure PCA9555");
         return false;
@@ -183,6 +172,14 @@ bool ESP32S3ZeroKeyboard::start(lv_display_t* display) {
     lv_indev_set_read_cb(deviceHandle, &keyboard_read_callback);
     lv_indev_set_display(deviceHandle, display);
     lv_indev_set_user_data(deviceHandle, this);
+
+    // After ensuring bus is ready, scan for all devices
+    TT_LOG_I(TAG, "Scanning I2C bus for all devices...");
+    for (uint8_t addr = 1; addr < 127; ++addr) {
+        if (tt::hal::i2c::masterHasDeviceAtAddress(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, addr, pdMS_TO_TICKS(50))) {
+            TT_LOG_I(TAG, "  - Device at 0x%02X", addr);
+        }
+    }
 
     TT_LOG_I(TAG, "ESP32S3-ZERO keyboard started successfully");
     return true;
@@ -199,8 +196,28 @@ bool ESP32S3ZeroKeyboard::stop() {
 
 bool ESP32S3ZeroKeyboard::isAttached() const {
     TT_LOG_I(TAG, "Checking for keyboard at I2C address 0x%02X on bus %d", ESP32S3_KEYBOARD_SLAVE_ADDRESS, ESP32S3_KEYBOARD_I2C_BUS_HANDLE);
-    // Use Tactility's thread-safe device detection with proper timeout
-    return tt::hal::i2c::masterHasDeviceAtAddress(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, ESP32S3_KEYBOARD_SLAVE_ADDRESS, pdMS_TO_TICKS(200));
+    // Ensure bus is up before probing
+    if (!tt::hal::i2c::isStarted(ESP32S3_KEYBOARD_I2C_BUS_HANDLE)) {
+        if (!tt::hal::i2c::start(ESP32S3_KEYBOARD_I2C_BUS_HANDLE)) {
+            TT_LOG_E(TAG, "Failed to start I2C bus %d in isAttached", ESP32S3_KEYBOARD_I2C_BUS_HANDLE);
+            return false;
+        }
+    }
+    // Scan entire I2C bus to detect devices
+    TT_LOG_I(TAG, "isAttached: scanning I2C bus for devices...");
+    bool foundKeyboard = false;
+    for (uint8_t addr = 1; addr < 127; ++addr) {
+        if (tt::hal::i2c::masterHasDeviceAtAddress(ESP32S3_KEYBOARD_I2C_BUS_HANDLE, addr, pdMS_TO_TICKS(50))) {
+            TT_LOG_I(TAG, "isAttached: device at 0x%02X", addr);
+            if (addr == ESP32S3_KEYBOARD_SLAVE_ADDRESS) {
+                foundKeyboard = true;
+            }
+        }
+    }
+    if (!foundKeyboard) {
+        TT_LOG_E(TAG, "isAttached: PCA9555 not found at expected address 0x%02X", ESP32S3_KEYBOARD_SLAVE_ADDRESS);
+    }
+    return foundKeyboard;
 }
 
 std::shared_ptr<tt::hal::keyboard::KeyboardDevice> createKeyboard() {

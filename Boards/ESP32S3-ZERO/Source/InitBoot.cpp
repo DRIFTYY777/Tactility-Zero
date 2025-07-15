@@ -23,6 +23,9 @@ bool initBoot() {
         return false;
     }
 
+
+    
+
     TT_LOG_I(TAG, "ESP32S3-ZERO boot initialization complete");
     return true;
 }
